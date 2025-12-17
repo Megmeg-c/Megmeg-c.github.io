@@ -2,7 +2,8 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>台灣小吃接接樂</title>
+  <title>台灣小吃接接樂（圖片版）</title>
+  <link rel="icon" href="favicon.png">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,29 +13,36 @@
     #gameArea {
       width: 400px;
       height: 500px;
-      background: white;
+      background-image: url("images/background.png");
+      background-size: cover;
       border: 2px solid #333;
       margin: 20px auto;
       position: relative;
       overflow: hidden;
     }
     #basket {
-      width: 60px;
-      height: 20px;
-      background: #8b4513;
+      width: 80px;
+      height: 50px;
+      background-image: url("images/basket.png");
+      background-size: cover;
       position: absolute;
       bottom: 10px;
-      left: 170px;
-      border-radius: 5px;
+      left: 160px;
     }
     .food {
       position: absolute;
-      font-size: 24px;
+      width: 40px;
+      height: 40px;
       top: 0;
     }
-    #score {
-      font-size: 18px;
-      margin-top: 10px;
+    #scoreBoard {
+      width: 160px;
+      height: 50px;
+      margin: 10px auto;
+      background-image: url("images/score.png");
+      background-size: cover;
+      line-height: 50px;
+      font-weight: bold;
     }
     #startBtn {
       padding: 10px 20px;
@@ -61,7 +69,8 @@
 
   <h1>台灣小吃接接樂</h1>
   <button id="startBtn">START</button>
-  <div id="score">分數：0</div>
+
+  <div id="scoreBoard">分數：<span id="score">0</span></div>
 
   <div id="gameArea">
     <div id="basket"></div>
@@ -72,7 +81,7 @@
   <div id="rules">
     <strong>遊戲規則：</strong>
     <ul>
-      <li>按下 START 開始遊戲</li>
+      <li>點擊 START 開始遊戲</li>
       <li>使用鍵盤 ← → 控制籃子</li>
       <li>接到台灣小吃分數 +1</li>
       <li>沒接到任何小吃，遊戲結束</li>
@@ -82,30 +91,35 @@
   <script>
     const gameArea = document.getElementById('gameArea');
     const basket = document.getElementById('basket');
-    const scoreText = document.getElementById('score');
+    const scoreSpan = document.getElementById('score');
     const startBtn = document.getElementById('startBtn');
     const gameOverText = document.getElementById('gameOver');
 
-    let basketX = 170;
+    let basketX = 160;
     let score = 0;
     let gameRunning = false;
     let foodTimer;
 
-    const foods = ['🍢','🧋','🥟','🍜','🍍']; // 台灣小吃
+    // 放你自己的台灣小吃圖片路徑
+    const foods = [
+      'images/food1.png', // 雞排
+      'images/food2.png', // 珍珠奶茶
+      'images/food3.png', // 滷肉飯
+      'images/food4.png', // 臭豆腐
+      'images/food5.png'  // 牛肉麵
+    ];
 
-    // 鍵盤控制籃子
     document.addEventListener('keydown', e => {
       if (!gameRunning) return;
       if (e.key === 'ArrowLeft' && basketX > 0) basketX -= 20;
-      if (e.key === 'ArrowRight' && basketX < 340) basketX += 20;
+      if (e.key === 'ArrowRight' && basketX < 320) basketX += 20;
       basket.style.left = basketX + 'px';
     });
 
-    // 產生掉落食物
     function createFood() {
-      const food = document.createElement('div');
+      const food = document.createElement('img');
+      food.src = foods[Math.floor(Math.random() * foods.length)];
       food.className = 'food';
-      food.textContent = foods[Math.floor(Math.random() * foods.length)];
       food.style.left = Math.random() * 360 + 'px';
       gameArea.appendChild(food);
 
@@ -118,15 +132,13 @@
         y += 3;
         food.style.top = y + 'px';
 
-        // 碰到籃子
-        if (y > 460 && food.offsetLeft + 24 > basketX && food.offsetLeft < basketX + 60) {
+        if (y > 450 && food.offsetLeft + 40 > basketX && food.offsetLeft < basketX + 80) {
           clearInterval(fall);
           gameArea.removeChild(food);
           score++;
-          scoreText.textContent = '分數：' + score;
+          scoreSpan.textContent = score;
         }
 
-        // 沒接到
         if (y > 500) {
           clearInterval(fall);
           endGame();
@@ -136,7 +148,7 @@
 
     function startGame() {
       score = 0;
-      scoreText.textContent = '分數：0';
+      scoreSpan.textContent = '0';
       gameRunning = true;
       gameOverText.style.display = 'none';
       foodTimer = setInterval(createFood, 1000);
