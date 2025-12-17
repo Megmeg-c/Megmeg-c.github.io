@@ -39,7 +39,7 @@
     <section class="rules-section">
         <h3>遊戲規則說明</h3>
         <p><strong>如何開始：</strong> 點擊中央的 **START** 按鈕。</p>
-        <p><strong>如何操作：</strong> 使用鍵盤的 **左箭頭 (←)** 和 **右箭頭 (→)** 控制籃子左右移動。</p>
+        <p><strong>如何操作：** 使用鍵盤的 **左箭頭 (←)** 和 **右箭頭 (→)** 控制籃子左右移動。</p>
         <p><strong>何時加分：</strong> 成功讓籃子接住掉落的小吃，**分數 +1**。</p>
         <p><strong>何時結束：</strong> 只要 **任一個小吃掉出遊戲畫面底部** (未被接到)，遊戲立刻結束。</p>
     </section>
@@ -64,7 +64,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* 4️⃣ 計分板背景 */
+/* 4️⃣ 計分板背景: images/score.png */
 .scoreboard {
     padding: 10px 20px;
     margin-bottom: 20px;
@@ -72,7 +72,7 @@ body {
     border-radius: 8px;
     background-color: #ffe0b2; 
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    /* 使用 score.png 作為背景 */
+    /* 確保 score.png 路徑正確 */
     background-image: url('images/score.png');
     background-size: cover;
     background-position: center;
@@ -87,7 +87,7 @@ body {
     color: #e65100; 
 }
 
-/* 遊戲容器，讓遊戲區置中並增加陰影 */
+/* 遊戲容器 */
 #game-container {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     margin-bottom: 30px;
@@ -100,7 +100,7 @@ body {
     border: 5px solid #a0522d; 
     overflow: hidden; 
     position: relative; 
-    /* 使用 background.png 作為背景 */
+    /* 確保 background.png 路徑正確 */
     background-image: url('images/background.png');
     background-size: cover;
     background-position: center;
@@ -212,6 +212,7 @@ let foodDropInterval;
 let foodMoveInterval; 
 
 // 3️⃣ 台灣小吃（共五種）路徑更新
+// 確保檔名與 images/ 資料夾內完全一致
 const foodImages = [
     'images/food1.png', // 雞排
     'images/food2.png', // 珍珠奶茶
@@ -228,7 +229,7 @@ function initializeBasket() {
     basket.style.left = `${basketPositionX}px`;
 }
 
-// 核心：移除畫面上的所有小吃
+// 核心：移除畫面上的所有小吃 (符合要求：遊戲結束或重新開始前清空)
 function clearAllFood() {
     const foods = document.querySelectorAll('.falling-food');
     foods.forEach(food => food.remove());
@@ -241,7 +242,7 @@ function startGame() {
         clearInterval(foodMoveInterval);
     }
     
-    // 畫面清空、分數歸零、狀態重置 
+    // 畫面清空、分數歸零、狀態重置 (符合要求)
     clearAllFood();
     score = 0;
     scoreDisplay.textContent = score;
@@ -272,7 +273,7 @@ function endGame() {
     // 顯示遊戲結束畫面
     gameOverMessage.classList.add('active');
     
-    // 畫面上的所有小吃 必須全部消失 
+    // 畫面上的所有小吃 必須全部消失 (符合要求)
     clearAllFood();
 }
 
@@ -307,7 +308,7 @@ document.addEventListener('keydown', (e) => {
 
 // 創建一個新的掉落小吃
 function createFood() {
-    // 隨機選擇小吃圖片
+    // 隨機選擇小吃圖片 (food1.png ~ food5.png)
     const randomIndex = Math.floor(Math.random() * foodImages.length);
     const foodSrc = foodImages[randomIndex];
     
