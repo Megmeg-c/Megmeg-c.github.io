@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>台灣小吃接接樂（圖片版）</title>
-  <link rel="icon" href="favicon.png">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -158,6 +157,10 @@
       gameRunning = false;
       clearInterval(foodTimer);
       gameOverText.style.display = 'block';
+
+      // 移除畫面上所有還存在的食物
+      const allFoods = document.querySelectorAll('.food');
+      allFoods.forEach(food => food.remove());
     }
 
     startBtn.addEventListener('click', startGame);
