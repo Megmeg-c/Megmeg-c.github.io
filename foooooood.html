@@ -1,3 +1,15 @@
+taiwan_food_game/
+├─ index.html
+├─ style.css
+├─ script.js
+└─ images/
+    ├─ food_1.png
+    ├─ food_2.png
+    ├─ food_3.png
+    ├─ food_4.png
+    ├─ food_5.png
+    ├─ basket.png
+    └─ diet.png       ← favicon
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -5,7 +17,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>台灣小吃接接樂</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="images/diet.png" type="image/x-icon">
 </head>
 <body>
     <h1>台灣小吃接接樂</h1>
@@ -74,13 +86,13 @@ let basketX = 270;
 let score = 0;
 let gameOverFlag = false;
 
-// 5種小吃圖片
+// 小吃圖片（使用你的檔名）
 const foods = [
-    './images/bubble_tea.png',
-    './images/stinky_tofu.png',
-    './images/fried_chicken.png',
-    './images/shaved_ice.png',
-    './images/spring_roll.png'
+    './images/food_1.png',
+    './images/food_2.png',
+    './images/food_3.png',
+    './images/food_4.png',
+    './images/food_5.png'
 ];
 
 // 移動籃子
