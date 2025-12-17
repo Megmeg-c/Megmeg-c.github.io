@@ -41,7 +41,7 @@
         <p><strong>如何開始：</strong> 點擊中央的 **START** 按鈕。</p>
         <p><strong>如何操作：</strong> 使用鍵盤的 **左箭頭 (←)** 和 **右箭頭 (→)** 控制籃子左右移動。</p>
         <p><strong>何時加分：</strong> 成功讓籃子接住掉落的小吃，**分數 +1**。</p>
-        <p><strong>何時結束：** 只要 **任一個小吃掉出遊戲畫面底部** (未被接到)，遊戲立刻結束。</p>
+        <p><strong>何時結束：</strong> 只要 **任一個小吃掉出遊戲畫面底部** (未被接到)，遊戲立刻結束。</p>
     </section>
 
     <script src="script.js"></script>
@@ -64,7 +64,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* 4️⃣ 計分板 */
+/* 4️⃣ 計分板背景 */
 .scoreboard {
     padding: 10px 20px;
     margin-bottom: 20px;
@@ -72,6 +72,10 @@ body {
     border-radius: 8px;
     background-color: #ffe0b2; 
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* 使用 score.png 作為背景 */
+    background-image: url('images/score.png');
+    background-size: cover;
+    background-position: center;
 }
 .scoreboard h2 {
     margin: 0;
@@ -89,20 +93,20 @@ body {
     margin-bottom: 30px;
 }
 
-/* 2️⃣ 遊戲區域 */
+/* 1️⃣ 遊戲區的背景畫面 (background.png) */
 #game-area {
     width: 500px; /* 固定寬度 */
     height: 600px; /* 固定高度 */
     border: 5px solid #a0522d; 
     overflow: hidden; 
-    position: relative; /* 關鍵：絕對定位的基準點 */
-    /* 請確保 images/background.jpg 存在 */
-    background-image: url('images/background.jpg');
+    position: relative; 
+    /* 使用 background.png 作為背景 */
+    background-image: url('images/background.png');
     background-size: cover;
     background-position: center;
 }
 
-/* 1️⃣ 開始畫面 & 遊戲結束畫面 (作為遮罩) */
+/* 遮罩畫面樣式 (START/GAME OVER) */
 .screen {
     position: absolute;
     top: 0;
@@ -119,7 +123,7 @@ body {
     text-align: center;
 }
 .screen.active {
-    display: flex; /* 啟用時顯示 */
+    display: flex; 
 }
 
 /* 按鈕樣式 */
@@ -138,16 +142,17 @@ body {
     background-color: #45a049;
 }
 
-/* 3️⃣ 籃子 (玩家角色) */
+/* 2️⃣ 籃子 (basket.png) */
 #basket {
     position: absolute; 
     bottom: 0; 
     width: 100px; 
     height: 80px; 
     z-index: 50; 
-    transition: left 0.05s linear; /* 讓鍵盤移動更流暢 */
+    transition: left 0.05s linear;
 }
 #basket img {
+    /* 圖片路徑在 index.html 裡 */
     width: 100%;
     height: 100%;
     object-fit: contain; 
@@ -156,7 +161,7 @@ body {
 /* 掉落的小吃圖片樣式 */
 .falling-food {
     position: absolute; 
-    top: -60px; /* 初始位置在畫面外上方 */
+    top: -60px; 
     width: 60px; 
     height: 60px;
 }
@@ -167,7 +172,7 @@ body {
     border-radius: 50%;
 }
 
-/* 5️⃣ 遊戲規則說明 */
+/* 遊戲規則說明 */
 .rules-section {
     width: 500px;
     background-color: #fff;
@@ -200,19 +205,19 @@ const basketSpeed = 15;
 const basketWidth = 100; 
 const gameAreaWidth = 500;
 const gameAreaHeight = 600;
-const foodSpeed = 5; // 小吃掉落速度
-const foodSize = 60; // 小吃寬高
+const foodSpeed = 5; 
+const foodSize = 60; 
 
-let foodDropInterval; // 小吃生成計時器
-let foodMoveInterval; // 小吃移動/碰撞檢測計時器
+let foodDropInterval; 
+let foodMoveInterval; 
 
-// 五種不同的台灣小吃圖片路徑 (請確認這些圖片檔名和路徑正確)
+// 3️⃣ 台灣小吃（共五種）路徑更新
 const foodImages = [
-    'images/chicken-fillet.png',
-    'images/bubble-tea.png',
-    'images/braised-pork-rice.png',
-    'images/stinky-tofu.png',
-    'images/beef-noodles.png'
+    'images/food1.png', // 雞排
+    'images/food2.png', // 珍珠奶茶
+    'images/food3.png', // 滷肉飯
+    'images/food4.png', // 臭豆腐
+    'images/food5.png'  // 牛肉麵
 ];
 
 // --- 遊戲流程控制 ---
@@ -223,7 +228,7 @@ function initializeBasket() {
     basket.style.left = `${basketPositionX}px`;
 }
 
-// 核心：移除畫面上的所有小吃 (符合要求：遊戲結束或重新開始前清空)
+// 核心：移除畫面上的所有小吃
 function clearAllFood() {
     const foods = document.querySelectorAll('.falling-food');
     foods.forEach(food => food.remove());
@@ -232,12 +237,11 @@ function clearAllFood() {
 // 遊戲開始流程
 function startGame() {
     if (isGameRunning) {
-        // 避免多重啟動
         clearInterval(foodDropInterval);
         clearInterval(foodMoveInterval);
     }
     
-    // 畫面清空、分數歸零、狀態重置 (符合要求)
+    // 畫面清空、分數歸零、狀態重置 
     clearAllFood();
     score = 0;
     scoreDisplay.textContent = score;
@@ -268,11 +272,11 @@ function endGame() {
     // 顯示遊戲結束畫面
     gameOverMessage.classList.add('active');
     
-    // 畫面上的所有小吃 必須全部消失 (符合要求)
+    // 畫面上的所有小吃 必須全部消失 
     clearAllFood();
 }
 
-// --- 3️⃣ 籃子（玩家角色）控制 ---
+// --- 籃子（玩家角色）控制 ---
 
 // 鍵盤事件監聽
 document.addEventListener('keydown', (e) => {
@@ -299,9 +303,9 @@ document.addEventListener('keydown', (e) => {
 });
 
 
-// --- 4️⃣ 遊戲核心邏輯 ---
+// --- 遊戲核心邏輯 ---
 
-// 1️⃣ 創建一個新的掉落小吃
+// 創建一個新的掉落小吃
 function createFood() {
     // 隨機選擇小吃圖片
     const randomIndex = Math.floor(Math.random() * foodImages.length);
@@ -309,26 +313,25 @@ function createFood() {
     
     const food = document.createElement('div');
     food.classList.add('falling-food');
+    // 設置小吃圖片
     food.innerHTML = `<img src="${foodSrc}" alt="台灣小吃">`;
 
     // 隨機水平位置
     const randomX = Math.floor(Math.random() * (gameAreaWidth - foodSize));
     
     food.style.left = `${randomX}px`;
-    food.style.top = `-${foodSize}px`; // 從畫面外開始掉落
+    food.style.top = `-${foodSize}px`; 
     
     gameArea.appendChild(food);
 }
 
-// 2️⃣, 3️⃣ 移動小吃、碰撞判斷、遊戲結束條件
+// 移動小吃、碰撞判斷、遊戲結束條件
 function moveFoodAndCheckCollision() {
-    // 遍歷所有掉落中的小吃
     const foods = document.querySelectorAll('.falling-food');
     
-    // 獲取籃子檢測範圍
     const basketRect = {
         left: basketPositionX,
-        top: gameAreaHeight - basket.clientHeight, // 籃子頂部的 Y 座標
+        top: gameAreaHeight - basket.clientHeight, 
         right: basketPositionX + basketWidth,
     };
 
@@ -342,11 +345,8 @@ function moveFoodAndCheckCollision() {
 
         const foodBottomY = currentTop + foodSize;
 
-        // 2️⃣ 碰撞判斷
-        // 條件 1: 垂直範圍檢查 (小吃的底部是否與籃子頂部重合)
+        // 碰撞判斷: 垂直上剛好落入籃子頂部範圍 且 水平上有重疊
         const isCollidingY = (foodBottomY >= basketRect.top) && (foodBottomY <= basketRect.top + foodSpeed);
-        
-        // 條件 2: 水平範圍檢查
         const isCollidingX = (foodLeft < basketRect.right) && (foodLeft + foodSize > basketRect.left);
 
         if (isCollidingY && isCollidingX) {
@@ -356,7 +356,7 @@ function moveFoodAndCheckCollision() {
             scoreDisplay.textContent = score;
 
         } else if (currentTop > gameAreaHeight) {
-            // 3️⃣ 遊戲結束條件 (小吃沒有被接到，掉出畫面底部)
+            // 遊戲結束條件 (掉出畫面底部)
             food.remove();
             endGame();
         }
