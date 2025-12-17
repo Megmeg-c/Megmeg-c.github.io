@@ -2,180 +2,134 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>台灣小吃接接樂（圖片版）</title>
+  <title>台灣小吃接接樂</title>
+  <link rel="icon" href="favicon.png">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      text-align: center;
-    }
+    body { font-family: Arial; background: #f2f2f2; text-align: center; }
     #gameArea {
-      width: 400px;
-      height: 500px;
-      background-image: url("images/background.png");
-      background-size: cover;
-      border: 2px solid #333;
-      margin: 20px auto;
-      position: relative;
-      overflow: hidden;
+      width: 400px; height: 500px;
+      background-image: url('images/background.png');
+      background-size: cover; border: 2px solid #333;
+      margin: 20px auto; position: relative; overflow: hidden;
     }
     #basket {
-      width: 80px;
-      height: 50px;
-      background-image: url("images/basket.png");
-      background-size: cover;
-      position: absolute;
-      bottom: 10px;
-      left: 160px;
+      width: 80px; height: 50px;
+      background-image: url('images/basket.png');
+      background-size: cover; position: absolute; bottom: 10px; left: 160px;
     }
-    .food {
-      position: absolute;
-      width: 40px;
-      height: 40px;
-      top: 0;
-    }
+    .food { position: absolute; width: 40px; height: 40px; top: 0; }
     #scoreBoard {
-      width: 160px;
-      height: 50px;
-      margin: 10px auto;
-      background-image: url("images/score.png");
-      background-size: cover;
-      line-height: 50px;
-      font-weight: bold;
+      width: 160px; height: 50px; margin: 10px auto;
+      background-image: url('images/score.png'); background-size: cover;
+      line-height: 50px; font-weight: bold;
     }
-    #startBtn {
-      padding: 10px 20px;
-      font-size: 18px;
-      cursor: pointer;
-    }
-    #gameOver {
-      display: none;
-      font-size: 20px;
-      color: red;
-    }
+    #startBtn { padding: 10px 20px; font-size: 18px; cursor: pointer; }
+    #gameOver { display: none; font-size: 20px; color: red; }
     #rules {
-      width: 400px;
-      margin: 10px auto;
-      text-align: left;
-      font-size: 14px;
-      background: #fff;
-      padding: 10px;
-      border: 1px solid #ccc;
+      width: 400px; margin: 10px auto; text-align: left; font-size: 14px;
+      background: #fff; padding: 10px; border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
 
-  <h1>台灣小吃接接樂</h1>
-  <button id="startBtn">START</button>
+<h1>台灣小吃接接樂</h1>
+<button id="startBtn">START</button>
+<div id="scoreBoard">分數：<span id="score">0</span></div>
+<div id="gameArea">
+  <div id="basket"></div>
+</div>
+<div id="gameOver">遊戲結束！</div>
+<div id="rules">
+  <strong>遊戲規則：</strong>
+  <ul>
+    <li>點擊 START 開始遊戲</li>
+    <li>使用鍵盤 ← → 控制籃子</li>
+    <li>接到台灣小吃分數 +1</li>
+    <li>沒接到任何小吃，遊戲結束</li>
+  </ul>
+</div>
 
-  <div id="scoreBoard">分數：<span id="score">0</span></div>
+<script>
+const gameArea = document.getElementById('gameArea');
+const basket = document.getElementById('basket');
+const scoreSpan = document.getElementById('score');
+const startBtn = document.getElementById('startBtn');
+const gameOverText = document.getElementById('gameOver');
 
-  <div id="gameArea">
-    <div id="basket"></div>
-  </div>
+let basketX = 160;
+let score = 0;
+let gameRunning = false;
+let foodTimer;
 
-  <div id="gameOver">遊戲結束！</div>
+// 五種台灣小吃圖片
+const foods = [
+  'images/food1.png',
+  'images/food2.png',
+  'images/food3.png',
+  'images/food4.png',
+  'images/food5.png'
+];
 
-  <div id="rules">
-    <strong>遊戲規則：</strong>
-    <ul>
-      <li>點擊 START 開始遊戲</li>
-      <li>使用鍵盤 ← → 控制籃子</li>
-      <li>接到台灣小吃分數 +1</li>
-      <li>沒接到任何小吃，遊戲結束</li>
-    </ul>
-  </div>
+document.addEventListener('keydown', e => {
+  if (!gameRunning) return;
+  if (e.key === 'ArrowLeft' && basketX > 0) basketX -= 20;
+  if (e.key === 'ArrowRight' && basketX < 320) basketX += 20;
+  basket.style.left = basketX + 'px';
+});
 
-  <script>
-    const gameArea = document.getElementById('gameArea');
-    const basket = document.getElementById('basket');
-    const scoreSpan = document.getElementById('score');
-    const startBtn = document.getElementById('startBtn');
-    const gameOverText = document.getElementById('gameOver');
+function createFood() {
+  const food = document.createElement('img');
+  food.src = foods[Math.floor(Math.random() * foods.length)];
+  food.className = 'food';
+  food.style.left = Math.random() * 360 + 'px';
+  gameArea.appendChild(food);
 
-    let basketX = 160;
-    let score = 0;
-    let gameRunning = false;
-    let foodTimer;
+  let y = 0;
+  const fall = setInterval(() => {
+    if (!gameRunning) { clearInterval(fall); return; }
+    y += 3;
+    food.style.top = y + 'px';
 
-    // 放你自己的台灣小吃圖片路徑
-    const foods = [
-      'images/food1.png', // 雞排
-      'images/food2.png', // 珍珠奶茶
-      'images/food3.png', // 滷肉飯
-      'images/food4.png', // 臭豆腐
-      'images/food5.png'  // 牛肉麵
-    ];
-
-    document.addEventListener('keydown', e => {
-      if (!gameRunning) return;
-      if (e.key === 'ArrowLeft' && basketX > 0) basketX -= 20;
-      if (e.key === 'ArrowRight' && basketX < 320) basketX += 20;
-      basket.style.left = basketX + 'px';
-    });
-
-    function createFood() {
-      const food = document.createElement('img');
-      food.src = foods[Math.floor(Math.random() * foods.length)];
-      food.className = 'food';
-      food.style.left = Math.random() * 360 + 'px';
-      gameArea.appendChild(food);
-
-      let y = 0;
-      const fall = setInterval(() => {
-        if (!gameRunning) {
-          clearInterval(fall);
-          return;
-        }
-        y += 3;
-        food.style.top = y + 'px';
-
-        if (y > 450 && food.offsetLeft + 40 > basketX && food.offsetLeft < basketX + 80) {
-          clearInterval(fall);
-          gameArea.removeChild(food);
-          score++;
-          scoreSpan.textContent = score;
-        }
-
-        if (y > 500) {
-          clearInterval(fall);
-          endGame();
-        }
-      }, 20);
+    // 碰到籃子
+    if (y > 450 && food.offsetLeft + 40 > basketX && food.offsetLeft < basketX + 80) {
+      clearInterval(fall);
+      food.remove();
+      score++;
+      scoreSpan.textContent = score;
     }
 
-    function startGame() {
-      // ⭐ 開始新遊戲前，先清空畫面上的所有食物
-      const allFoods = document.querySelectorAll('.food');
-      allFoods.forEach(food => food.remove());
-
-      // 重置狀態
-      score = 0;
-      scoreSpan.textContent = '0';
-      basketX = 160;
-      basket.style.left = basketX + 'px';
-
-      gameRunning = true;
-      gameOverText.style.display = 'none';
-
-      // 防止重複 setInterval
-      clearInterval(foodTimer);
-      foodTimer = setInterval(createFood, 1000);
+    // 掉出畫面
+    if (y > 500) {
+      clearInterval(fall);
+      endGame();
     }
+  }, 20);
+}
 
-    function endGame() {
-      gameRunning = false;
-      clearInterval(foodTimer);
-      gameOverText.style.display = 'block';
+function startGame() {
+  // 開始前清空所有食物
+  document.querySelectorAll('.food').forEach(f => f.remove());
+  score = 0;
+  scoreSpan.textContent = '0';
+  basketX = 160;
+  basket.style.left = basketX + 'px';
+  gameRunning = true;
+  gameOverText.style.display = 'none';
 
-      // 移除畫面上所有還存在的食物
-      const allFoods = document.querySelectorAll('.food');
-      allFoods.forEach(food => food.remove());
-    }
+  clearInterval(foodTimer);
+  foodTimer = setInterval(createFood, 1000);
+}
 
-    startBtn.addEventListener('click', startGame);
-  </script>
+function endGame() {
+  gameRunning = false;
+  clearInterval(foodTimer);
+  gameOverText.style.display = 'block';
+  document.querySelectorAll('.food').forEach(f => f.remove());
+}
+
+startBtn.addEventListener('click', startGame);
+</script>
 
 </body>
 </html>
