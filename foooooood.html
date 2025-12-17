@@ -1,0 +1,173 @@
+taiwan_food_game/
+│
+├─ index.html
+├─ style.css
+├─ script.js
+├─ images/
+│   ├─ bubble_tea.png
+│   ├─ stinky_tofu.png
+│   ├─ fried_chicken.png
+│   ├─ shaved_ice.png
+│   ├─ spring_roll.png
+│   ├─ basket.png
+│   └─ favicon.ico
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣小吃接接樂</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <h1>台灣小吃接接樂</h1>
+
+    <!-- 開始遊戲按鈕 -->
+    <button id="startBtn">START</button>
+
+    <!-- 計分板 -->
+    <div id="scoreBoard">分數: 0</div>
+
+    <!-- 遊戲區域 -->
+    <div id="gameArea">
+        <div id="basket"></div>
+    </div>
+
+    <!-- 規則 -->
+    <div id="rules">
+        <h3>遊戲規則</h3>
+        <ul>
+            <li>用左右鍵操作籃子接小吃</li>
+            <li>接到食物 +1 分</li>
+            <li>沒接到食物遊戲結束</li>
+        </ul>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+#gameArea {
+    position: relative;
+    width: 600px;
+    height: 400px;
+    margin: 20px auto;
+    border: 2px solid #333;
+    background-color: #f0f0f0;
+    overflow: hidden;
+}
+
+#basket {
+    position: absolute;
+    bottom: 0;
+    left: 270px;
+    width: 60px;
+    height: 60px;
+    background-image: url('images/basket.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.food {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+const startBtn = document.getElementById('startBtn');
+const gameArea = document.getElementById('gameArea');
+const basket = document.getElementById('basket');
+const scoreBoard = document.getElementById('scoreBoard');
+
+const gameWidth = 600;
+const gameHeight = 400;
+const basketWidth = 60;
+let basketX = 270;
+let score = 0;
+let foodInterval;
+let gameOverFlag = false;
+
+// 5種小吃圖片
+const foods = [
+    'images/bubble_tea.png',
+    'images/stinky_tofu.png',
+    'images/fried_chicken.png',
+    'images/shaved_ice.png',
+    'images/spring_roll.png'
+];
+
+// 移動籃子
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') {
+        basketX = Math.max(0, basketX - 20);
+    } else if (e.key === 'ArrowRight') {
+        basketX = Math.min(gameWidth - basketWidth, basketX + 20);
+    }
+    basket.style.left = basketX + 'px';
+});
+
+// 開始遊戲
+startBtn.addEventListener('click', () => {
+    startBtn.disabled = true;
+    score = 0;
+    scoreBoard.innerText = '分數: ' + score;
+    gameOverFlag = false;
+    startFallingFood();
+});
+
+// 生成食物並掉落
+function startFallingFood() {
+    foodInterval = setInterval(() => {
+        if (gameOverFlag) return;
+
+        const food = document.createElement('div');
+        food.classList.add('food');
+        const foodImg = foods[Math.floor(Math.random() * foods.length)];
+        food.style.backgroundImage = `url(${foodImg})`;
+        const foodX = Math.random() * (gameWidth - 50);
+        let foodY = 0;
+        food.style.left = foodX + 'px';
+        food.style.top = foodY + 'px';
+        gameArea.appendChild(food);
+
+        const fallInterval = setInterval(() => {
+            if (gameOverFlag) {
+                clearInterval(fallInterval);
+                return;
+            }
+            foodY += 5;
+            food.style.top = foodY + 'px';
+
+            // 撞到籃子
+            if (
+                foodY + 50 >= gameHeight - 60 &&
+                foodX + 50 >= basketX &&
+                foodX <= basketX + basketWidth
+            ) {
+                score++;
+                scoreBoard.innerText = '分數: ' + score;
+                gameArea.removeChild(food);
+                clearInterval(fallInterval);
+            } 
+            // 掉到地板
+            else if (foodY > gameHeight) {
+                gameOver();
+                clearInterval(fallInterval);
+            }
+        }, 50);
+    }, 1000);
+}
+
+// 遊戲結束
+function gameOver() {
+    gameOverFlag = true;
+    alert('遊戲結束！你的分數: ' + score);
+    startBtn.disabled = false;
+    document.querySelectorAll('.food').forEach(f => f.remove());
+}
