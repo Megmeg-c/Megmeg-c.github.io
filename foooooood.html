@@ -10,18 +10,13 @@
 <body>
     <h1>台灣小吃接接樂</h1>
 
-    <!-- 開始遊戲按鈕 -->
     <button id="startBtn">START</button>
-
-    <!-- 計分板 -->
     <div id="scoreBoard">分數: 0</div>
 
-    <!-- 遊戲區域 -->
     <div id="gameArea">
         <div id="basket"></div>
     </div>
 
-    <!-- 規則 -->
     <div id="rules">
         <h3>遊戲規則</h3>
         <ul>
@@ -55,7 +50,7 @@ body {
     left: 270px;
     width: 60px;
     height: 60px;
-    background-image: url('images/basket.png');
+    background-image: url('./images/basket.png');
     background-size: contain;
     background-repeat: no-repeat;
 }
@@ -77,16 +72,15 @@ const gameHeight = 400;
 const basketWidth = 60;
 let basketX = 270;
 let score = 0;
-let foodInterval;
 let gameOverFlag = false;
 
 // 5種小吃圖片
 const foods = [
-    'images/bubble_tea.png',
-    'images/stinky_tofu.png',
-    'images/fried_chicken.png',
-    'images/shaved_ice.png',
-    'images/spring_roll.png'
+    './images/bubble_tea.png',
+    './images/stinky_tofu.png',
+    './images/fried_chicken.png',
+    './images/shaved_ice.png',
+    './images/spring_roll.png'
 ];
 
 // 移動籃子
@@ -110,13 +104,13 @@ startBtn.addEventListener('click', () => {
 
 // 生成食物並掉落
 function startFallingFood() {
-    foodInterval = setInterval(() => {
+    const foodInterval = setInterval(() => {
         if (gameOverFlag) return;
 
         const food = document.createElement('div');
         food.classList.add('food');
         const foodImg = foods[Math.floor(Math.random() * foods.length)];
-        food.style.backgroundImage = `url(${foodImg})`;
+        food.style.backgroundImage = `url('${foodImg}')`;
         const foodX = Math.random() * (gameWidth - 50);
         let foodY = 0;
         food.style.left = foodX + 'px';
