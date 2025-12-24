@@ -1,166 +1,170 @@
-taiwan_food_game/
-├─ index.html
-├─ style.css
-├─ script.js
-└─ images/
-    ├─ food_1.png
-    ├─ food_2.png
-    ├─ food_3.png
-    ├─ food_4.png
-    ├─ food_5.png
-    ├─ basket.png
-    └─ diet.png       ← favicon
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台灣小吃接接樂</title>
+    <title>台灣小吃大作戰</title>
+    <link rel="icon" href="diet.png" type="image/png">
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="images/diet.png" type="image/x-icon">
 </head>
 <body>
-    <h1>台灣小吃接接樂</h1>
 
-    <button id="startBtn">START</button>
-    <div id="scoreBoard">分數: 0</div>
-
-    <div id="gameArea">
-        <div id="basket"></div>
+    <div id="game-container">
+        <div id="ui-layer">
+            <div id="score-board">分數: <span id="score">0</span></div>
+            <button id="start-btn">START</button>
+            <div id="game-over-text" style="display: none;">遊戲結束</div>
+        </div>
+        
+        <div id="game-area">
+            <img src="box.png" id="basket">
+        </div>
     </div>
 
-    <div id="rules">
-        <h3>遊戲規則</h3>
+    <section id="rules">
+        <h3>🍱 遊戲規則說明</h3>
         <ul>
-            <li>用左右鍵操作籃子接小吃</li>
-            <li>接到食物 +1 分</li>
-            <li>沒接到食物遊戲結束</li>
+            <li><strong>如何開始：</strong> 點擊上方的 「START」 按鈕。</li>
+            <li><strong>如何操作：</strong> 使用鍵盤左右方向鍵 (← →) 移動籃子。</li>
+            <li><strong>何時加分：</strong> 接到掉落的小吃加 1 分。</li>
+            <li><strong>何時結束：</strong> 任何一個小吃掉出畫面底部，遊戲即結束。</li>
         </ul>
-    </div>
+    </section>
 
     <script src="script.js"></script>
 </body>
 </html>
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-}
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>台灣小吃大作戰</title>
+    <link rel="icon" href="diet.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-#gameArea {
-    position: relative;
-    width: 600px;
-    height: 400px;
-    margin: 20px auto;
-    border: 2px solid #333;
-    background-color: #f0f0f0;
-    overflow: hidden;
-}
+    <div id="game-container">
+        <div id="ui-layer">
+            <div id="score-board">分數: <span id="score">0</span></div>
+            <button id="start-btn">START</button>
+            <div id="game-over-text" style="display: none;">遊戲結束</div>
+        </div>
+        
+        <div id="game-area">
+            <img src="box.png" id="basket">
+        </div>
+    </div>
 
-#basket {
-    position: absolute;
-    bottom: 0;
-    left: 270px;
-    width: 60px;
-    height: 60px;
-    background-image: url('./images/basket.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-}
+    <section id="rules">
+        <h3>🍱 遊戲規則說明</h3>
+        <ul>
+            <li><strong>如何開始：</strong> 點擊上方的 「START」 按鈕。</li>
+            <li><strong>如何操作：</strong> 使用鍵盤左右方向鍵 (← →) 移動籃子。</li>
+            <li><strong>何時加分：</strong> 接到掉落的小吃加 1 分。</li>
+            <li><strong>何時結束：</strong> 任何一個小吃掉出畫面底部，遊戲即結束。</li>
+        </ul>
+    </section>
 
-.food {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-const startBtn = document.getElementById('startBtn');
-const gameArea = document.getElementById('gameArea');
+    <script src="script.js"></script>
+</body>
+</html>
+const gameArea = document.getElementById('game-area');
 const basket = document.getElementById('basket');
-const scoreBoard = document.getElementById('scoreBoard');
+const scoreDisplay = document.getElementById('score');
+const startBtn = document.getElementById('start-btn');
+const gameOverText = document.getElementById('game-over-text');
 
-const gameWidth = 600;
-const gameHeight = 400;
-const basketWidth = 60;
-let basketX = 270;
 let score = 0;
-let gameOverFlag = false;
+let gameActive = false;
+let basketX = 175;
+let spawnTimer; // 用來存放產生物品的計時器
+let gameLoop;  // 用來存放遊戲邏輯更新的計時器
 
-// 小吃圖片（使用你的檔名）
-const foods = [
-    './images/food_1.png',
-    './images/food_2.png',
-    './images/food_3.png',
-    './images/food_4.png',
-    './images/food_5.png'
-];
-
-// 移動籃子
+// 監聽鍵盤
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') {
-        basketX = Math.max(0, basketX - 20);
-    } else if (e.key === 'ArrowRight') {
-        basketX = Math.min(gameWidth - basketWidth, basketX + 20);
+    if (!gameActive) return;
+    if (e.key === 'ArrowLeft' && basketX > 0) {
+        basketX -= 20;
+    } else if (e.key === 'ArrowRight' && basketX < 350) {
+        basketX += 20;
     }
     basket.style.left = basketX + 'px';
 });
 
 // 開始遊戲
-startBtn.addEventListener('click', () => {
-    startBtn.disabled = true;
+startBtn.addEventListener('click', startGame);
+
+function startGame() {
+    // 1. 清除舊有的計時器，防止 Bug
+    clearInterval(spawnTimer);
+    clearInterval(gameLoop);
+
+    // 2. 清空畫面上的舊食物
+    const oldFoods = document.querySelectorAll('.food');
+    oldFoods.forEach(f => f.remove());
+
+    // 3. 重置數值
     score = 0;
-    scoreBoard.innerText = '分數: ' + score;
-    gameOverFlag = false;
-    startFallingFood();
-});
+    scoreDisplay.innerText = score;
+    gameActive = true;
+    basketX = 175;
+    basket.style.left = basketX + 'px';
+    startBtn.style.display = 'none';
+    gameOverText.style.display = 'none';
 
-// 生成食物並掉落
-function startFallingFood() {
-    const foodInterval = setInterval(() => {
-        if (gameOverFlag) return;
-
-        const food = document.createElement('div');
-        food.classList.add('food');
-        const foodImg = foods[Math.floor(Math.random() * foods.length)];
-        food.style.backgroundImage = `url('${foodImg}')`;
-        const foodX = Math.random() * (gameWidth - 50);
-        let foodY = 0;
-        food.style.left = foodX + 'px';
-        food.style.top = foodY + 'px';
-        gameArea.appendChild(food);
-
-        const fallInterval = setInterval(() => {
-            if (gameOverFlag) {
-                clearInterval(fallInterval);
-                return;
-            }
-            foodY += 5;
-            food.style.top = foodY + 'px';
-
-            // 撞到籃子
-            if (
-                foodY + 50 >= gameHeight - 60 &&
-                foodX + 50 >= basketX &&
-                foodX <= basketX + basketWidth
-            ) {
-                score++;
-                scoreBoard.innerText = '分數: ' + score;
-                gameArea.removeChild(food);
-                clearInterval(fallInterval);
-            } 
-            // 掉到地板
-            else if (foodY > gameHeight) {
-                gameOver();
-                clearInterval(fallInterval);
-            }
-        }, 50);
-    }, 1000);
+    // 4. 設定新計時器
+    spawnTimer = setInterval(createFood, 1000); // 每一秒出一個
+    gameLoop = setInterval(updateGame, 20);      // 每 20 毫秒更新畫面
 }
 
-// 遊戲結束
-function gameOver() {
-    gameOverFlag = true;
-    alert('遊戲結束！你的分數: ' + score);
-    startBtn.disabled = false;
-    document.querySelectorAll('.food').forEach(f => f.remove());
+function createFood() {
+    if (!gameActive) return;
+    const food = document.createElement('img');
+    const foodType = Math.floor(Math.random() * 5) + 1; // 1~5
+    food.src = `food_${foodType}.png`;
+    food.classList.add('food');
+    
+    // 隨機橫向位置
+    food.style.left = Math.floor(Math.random() * 360) + 'px';
+    food.style.top = '0px';
+    gameArea.appendChild(food);
+}
+
+function updateGame() {
+    const foods = document.querySelectorAll('.food');
+    
+    foods.forEach(food => {
+        let top = parseInt(food.style.top);
+        top += 5; // 掉落速度
+        food.style.top = top + 'px';
+
+        // 碰撞判斷
+        const foodRect = food.getBoundingClientRect();
+        const basketRect = basket.getBoundingClientRect();
+
+        if (
+            foodRect.bottom >= basketRect.top &&
+            foodRect.right >= basketRect.left &&
+            foodRect.left <= basketRect.right &&
+            foodRect.top <= basketRect.bottom
+        ) {
+            food.remove();
+            score++;
+            scoreDisplay.innerText = score;
+        }
+
+        // 遊戲結束判定：如果掉到底部沒接到
+        if (top > 500) {
+            endGame();
+        }
+    });
+}
+
+function endGame() {
+    gameActive = false;
+    clearInterval(spawnTimer);
+    clearInterval(gameLoop);
+    gameOverText.style.display = 'block';
+    startBtn.style.display = 'inline-block';
+    startBtn.innerText = 'RESTART';
 }
