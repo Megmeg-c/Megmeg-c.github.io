@@ -1,170 +1,196 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>台灣小吃大作戰</title>
+    <title>EAT IT UP - 台灣小吃接接樂</title>
     <link rel="icon" href="diet.png" type="image/png">
-    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            text-align: center;
+        }
+        #gameArea {
+            width: 400px;
+            height: 500px;
+            /* 修正：移除 images/ */
+            background-image: url("background.png"); 
+            background-size: cover;
+            border: 2px solid #333;
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+        }
+        #basket {
+            width: 80px;
+            height: 50px;
+            /* 修正：移除 images/ 並修正 .png.png */
+            background-image: url("box.png"); 
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+            bottom: 10px;
+            left: 160px;
+        }
+        .food {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            top: 0;
+        }
+        #scoreBoard {
+            width: 160px;
+            height: 50px;
+            margin: 10px auto;
+            /* 修正：移除 images/ */
+            background-image: url("score.png"); 
+            background-size: cover;
+            line-height: 50px;
+            font-weight: bold;
+        }
+        #startBtn {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #gameOver {
+            display: none;
+            font-size: 24px;
+            font-weight: bold;
+            color: red;
+            margin-top: 10px;
+        }
+        #rules {
+            width: 400px;
+            margin: 10px auto;
+            text-align: left;
+            font-size: 14px;
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <div id="ui-layer">
-            <div id="score-board">分數: <span id="score">0</span></div>
-            <button id="start-btn">START</button>
-            <div id="game-over-text" style="display: none;">遊戲結束</div>
-        </div>
-        
-        <div id="game-area">
-            <img src="box.png" id="basket">
-        </div>
+    <h1>台灣小吃接接樂</h1>
+    <button id="startBtn">START</button>
+
+    <div id="scoreBoard">分數：<span id="score">0</span></div>
+
+    <div id="gameArea">
+        <div id="basket"></div>
     </div>
 
-    <section id="rules">
-        <h3>🍱 遊戲規則說明</h3>
+    <div id="gameOver">遊戲結束！</div>
+
+    <div id="rules">
+        <strong>🍱 遊戲規則說明：</strong>
         <ul>
-            <li><strong>如何開始：</strong> 點擊上方的 「START」 按鈕。</li>
-            <li><strong>如何操作：</strong> 使用鍵盤左右方向鍵 (← →) 移動籃子。</li>
-            <li><strong>何時加分：</strong> 接到掉落的小吃加 1 分。</li>
-            <li><strong>何時結束：</strong> 任何一個小吃掉出畫面底部，遊戲即結束。</li>
+            <li>點擊 START 開始遊戲</li>
+            <li>使用鍵盤 ← → 控制籃子</li>
+            <li>接到台灣小吃分數 +1</li>
+            <li>沒接到任何小吃（掉出底部），遊戲結束</li>
         </ul>
-    </section>
-
-    <script src="script.js"></script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <title>台灣小吃大作戰</title>
-    <link rel="icon" href="diet.png" type="image/png">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <div id="game-container">
-        <div id="ui-layer">
-            <div id="score-board">分數: <span id="score">0</span></div>
-            <button id="start-btn">START</button>
-            <div id="game-over-text" style="display: none;">遊戲結束</div>
-        </div>
-        
-        <div id="game-area">
-            <img src="box.png" id="basket">
-        </div>
     </div>
 
-    <section id="rules">
-        <h3>🍱 遊戲規則說明</h3>
-        <ul>
-            <li><strong>如何開始：</strong> 點擊上方的 「START」 按鈕。</li>
-            <li><strong>如何操作：</strong> 使用鍵盤左右方向鍵 (← →) 移動籃子。</li>
-            <li><strong>何時加分：</strong> 接到掉落的小吃加 1 分。</li>
-            <li><strong>何時結束：</strong> 任何一個小吃掉出畫面底部，遊戲即結束。</li>
-        </ul>
-    </section>
+    <script>
+        const gameArea = document.getElementById('gameArea');
+        const basket = document.getElementById('basket');
+        const scoreSpan = document.getElementById('score');
+        const startBtn = document.getElementById('startBtn');
+        const gameOverText = document.getElementById('gameOver');
 
-    <script src="script.js"></script>
+        let basketX = 160;
+        let score = 0;
+        let gameRunning = false;
+        let foodTimer;
+
+        // 確保這些檔名跟你的圖片檔案完全一致（注意大小寫）
+        const foods = [
+            'food_1.png', 
+            'food_2.png', 
+            'food_3.png', 
+            'food_4.png', 
+            'food_5.png'
+        ];
+
+        document.addEventListener('keydown', e => {
+            if (!gameRunning) return;
+            if (e.key === 'ArrowLeft' && basketX > 0) basketX -= 20;
+            if (e.key === 'ArrowRight' && basketX < 320) basketX += 20;
+            basket.style.left = basketX + 'px';
+        });
+
+        function createFood() {
+            if (!gameRunning) return;
+            const food = document.createElement('img');
+            food.src = foods[Math.floor(Math.random() * foods.length)];
+            food.className = 'food';
+            food.style.left = Math.random() * 360 + 'px';
+            gameArea.appendChild(food);
+
+            let y = 0;
+            const fall = setInterval(() => {
+                if (!gameRunning) {
+                    clearInterval(fall);
+                    food.remove();
+                    return;
+                }
+                y += 3;
+                food.style.top = y + 'px';
+
+                // 碰撞判斷
+                if (y > 440 && y < 480 && food.offsetLeft + 40 > basketX && food.offsetLeft < basketX + 80) {
+                    clearInterval(fall);
+                    food.remove();
+                    score++;
+                    scoreSpan.textContent = score;
+                }
+
+                // 沒接到掉出底部
+                if (y > 500) {
+                    clearInterval(fall);
+                    endGame();
+                }
+            }, 20);
+        }
+
+        function startGame() {
+            // 清空畫面
+            const allFoods = document.querySelectorAll('.food');
+            allFoods.forEach(f => f.remove());
+
+            // 重置數值
+            score = 0;
+            scoreSpan.textContent = '0';
+            basketX = 160;
+            basket.style.left = basketX + 'px';
+            gameRunning = true;
+            gameOverText.style.display = 'none';
+            startBtn.innerText = 'RESTART';
+
+            // 啟動計時器
+            clearInterval(foodTimer);
+            foodTimer = setInterval(createFood, 1000);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            clearInterval(foodTimer);
+            gameOverText.style.display = 'block';
+            
+            // 移除所有食物
+            const allFoods = document.querySelectorAll('.food');
+            allFoods.forEach(f => f.remove());
+        }
+
+        startBtn.addEventListener('click', startGame);
+    </script>
 </body>
 </html>
-const gameArea = document.getElementById('game-area');
-const basket = document.getElementById('basket');
-const scoreDisplay = document.getElementById('score');
-const startBtn = document.getElementById('start-btn');
-const gameOverText = document.getElementById('game-over-text');
-
-let score = 0;
-let gameActive = false;
-let basketX = 175;
-let spawnTimer; // 用來存放產生物品的計時器
-let gameLoop;  // 用來存放遊戲邏輯更新的計時器
-
-// 監聽鍵盤
-document.addEventListener('keydown', (e) => {
-    if (!gameActive) return;
-    if (e.key === 'ArrowLeft' && basketX > 0) {
-        basketX -= 20;
-    } else if (e.key === 'ArrowRight' && basketX < 350) {
-        basketX += 20;
-    }
-    basket.style.left = basketX + 'px';
-});
-
-// 開始遊戲
-startBtn.addEventListener('click', startGame);
-
-function startGame() {
-    // 1. 清除舊有的計時器，防止 Bug
-    clearInterval(spawnTimer);
-    clearInterval(gameLoop);
-
-    // 2. 清空畫面上的舊食物
-    const oldFoods = document.querySelectorAll('.food');
-    oldFoods.forEach(f => f.remove());
-
-    // 3. 重置數值
-    score = 0;
-    scoreDisplay.innerText = score;
-    gameActive = true;
-    basketX = 175;
-    basket.style.left = basketX + 'px';
-    startBtn.style.display = 'none';
-    gameOverText.style.display = 'none';
-
-    // 4. 設定新計時器
-    spawnTimer = setInterval(createFood, 1000); // 每一秒出一個
-    gameLoop = setInterval(updateGame, 20);      // 每 20 毫秒更新畫面
-}
-
-function createFood() {
-    if (!gameActive) return;
-    const food = document.createElement('img');
-    const foodType = Math.floor(Math.random() * 5) + 1; // 1~5
-    food.src = `food_${foodType}.png`;
-    food.classList.add('food');
-    
-    // 隨機橫向位置
-    food.style.left = Math.floor(Math.random() * 360) + 'px';
-    food.style.top = '0px';
-    gameArea.appendChild(food);
-}
-
-function updateGame() {
-    const foods = document.querySelectorAll('.food');
-    
-    foods.forEach(food => {
-        let top = parseInt(food.style.top);
-        top += 5; // 掉落速度
-        food.style.top = top + 'px';
-
-        // 碰撞判斷
-        const foodRect = food.getBoundingClientRect();
-        const basketRect = basket.getBoundingClientRect();
-
-        if (
-            foodRect.bottom >= basketRect.top &&
-            foodRect.right >= basketRect.left &&
-            foodRect.left <= basketRect.right &&
-            foodRect.top <= basketRect.bottom
-        ) {
-            food.remove();
-            score++;
-            scoreDisplay.innerText = score;
-        }
-
-        // 遊戲結束判定：如果掉到底部沒接到
-        if (top > 500) {
-            endGame();
-        }
-    });
-}
-
-function endGame() {
-    gameActive = false;
-    clearInterval(spawnTimer);
-    clearInterval(gameLoop);
-    gameOverText.style.display = 'block';
-    startBtn.style.display = 'inline-block';
-    startBtn.innerText = 'RESTART';
-}
